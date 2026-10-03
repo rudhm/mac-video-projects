@@ -28,7 +28,8 @@ newproject() {
   local target="$base"
 
   if [ -n "$2" ]; then
-    local subproject_name="${(C)2}"
+    # Preserve sub-project identifiers exactly as entered (for example, MPCVL70L1).
+    local subproject_name="$2"
     local existing_subs=("$base"/$subproject_name(N/))
     if (( ${#existing_subs[@]} > 0 )); then
       target="${existing_subs[1]}"

@@ -17,8 +17,8 @@ source /path/to/mac-video-projects/mac-video-projects.plugin.zsh
 
 ### `newproject` (or `np`)
 Creates a new standard video project structure in your base directory.
-Client and subfolder names are converted to title case when new folders are
-created.
+Client names are converted to title case when new folders are created.
+Subfolder names are preserved exactly as entered, including capitalization.
 
 ```bash
 np "client name"
