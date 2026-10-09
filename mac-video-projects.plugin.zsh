@@ -43,7 +43,7 @@ newproject() {
     target="$base/$(date "+%B %-d")"
   fi
 
-  mkdir -p "$target"/{01_footage,02_audio,03_graphics,04_captions,05_exports}
+  mkdir -p "$target"/{01_footage,02_audio,03_graphics,04_captions,05_drafts,06_final}
 
   echo "✅ Created/Updated project structure:"
   find "$target" -type d | sed "s|^$projects_dir/||" | sort | head -20
@@ -128,3 +128,49 @@ sortproject() {
 
   echo "\n✅ $moved file(s) sorted"
 }
+
+
+# Automatically version a file by appending _vXX_YYYY-MM-DD
+# Usage: versionfile <file>
+# It checks existing files with the same base name to find the next version.
+versionfile() {
+  if [ -z "$1" ]; then
+    echo "Usage: versionfile <file>"
+    return 1
+  fi
+  
+  local filepath="$1"
+  if [ ! -f "$filepath" ]; then
+    echo "❌ File not found: $filepath"
+    return 1
+  fi
+  
+  local dir=$(dirname "$filepath")
+  local file=$(basename "$filepath")
+  local base="${file%.*}"
+  local ext="${file##*.}"
+  local today=$(date "+%Y-%m-%d")
+  
+  # Strip any existing _vXX_YYYY-MM-DD from base to find the true base
+  local true_base=$(echo "$base" | sed -E 's/_v[0-9]+_[0-9]{4}-[0-9]{2}-[0-9]{2}$//')
+  
+  # Find the highest version number for this true_base
+  local max_v=0
+  for f in "$dir"/"$true_base"_v*_[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].*(N); do
+    if [ -f "$f" ]; then
+      local v=$(echo "$f" | grep -oE '_v[0-9]+_' | grep -oE '[0-9]+')
+      if [[ -n "$v" ]] && (( v > max_v )); then
+        max_v=$v
+      fi
+    fi
+  done
+  
+  local next_v=$((max_v + 1))
+  local next_v_pad=$(printf "%02d" $next_v)
+  
+  local new_name="${true_base}_v${next_v_pad}_${today}.${ext}"
+  mv "$filepath" "$dir/$new_name"
+  echo "✅ Renamed to: $new_name"
+}
+
+alias vf="versionfile"
