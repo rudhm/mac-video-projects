@@ -1,9 +1,19 @@
 # Usage: newproject ClientName        → creates $MAC_VIDEO_PROJECTS_DIR/ClientName/Month Day/...
 #        newproject ClientName Phase2  → creates $MAC_VIDEO_PROJECTS_DIR/ClientName/Phase2/...
 newproject() {
-  if [ -z "$1" ]; then
-    echo "Usage: newproject <project-name> [sub-project]"
-    echo "Example: newproject Carvaidya Lot-69"
+  local open_url=false
+  local args=()
+  for arg in "$@"; do
+    if [[ "$arg" == "-u" ]]; then
+      open_url=true
+    else
+      args+=("$arg")
+    fi
+  done
+
+  if (( ${#args[@]} == 0 )); then
+    echo "Usage: newproject [-u] <project-name> [sub-project]"
+    echo "Example: newproject -u Carvaidya Lot-69"
     return 1
   fi
 
@@ -14,7 +24,7 @@ newproject() {
   # Enable case-insensitive globbing for this function for fast lookups
   setopt local_options nocaseglob
 
-  local client_name="${(C)1}"
+  local client_name="${(C)args[1]}"
   local base="$projects_dir/$client_name"
   # Look for existing case-insensitive match
   local existing_bases=("$projects_dir"/$client_name(N/))
@@ -27,9 +37,9 @@ newproject() {
 
   local target="$base"
 
-  if [ -n "$2" ]; then
+  if (( ${#args[@]} > 1 )); then
     # Preserve sub-project identifiers exactly as entered (for example, MPCVL70L1).
-    local subproject_name="$2"
+    local subproject_name="${args[2]}"
     local existing_subs=("$base"/$subproject_name(N/))
     if (( ${#existing_subs[@]} > 0 )); then
       target="${existing_subs[1]}"
@@ -71,8 +81,10 @@ EOF
   # Ask which editor to open
   local choice
   
-  # Open tracking spreadsheet
-  open "https://docs.google.com/spreadsheets/d/1laNvw3iefHJpQiySSKjZFQ1QBrIsxhQWSD8rq0NaXvE/edit?gid=78774952#gid=78774952"
+  # Open tracking spreadsheet if -u was provided
+  if $open_url; then
+    open "https://docs.google.com/spreadsheets/d/1laNvw3iefHJpQiySSKjZFQ1QBrIsxhQWSD8rq0NaXvE/edit?gid=78774952#gid=78774952"
+  fi
   
   read -k 1 "choice?Open in (p) Premiere, (c) CapCut, or any other key to skip: "
   echo
