@@ -70,6 +70,10 @@ EOF
 
   # Ask which editor to open
   local choice
+  
+  # Open tracking spreadsheet
+  open "https://docs.google.com/spreadsheets/d/1laNvw3iefHJpQiySSKjZFQ1QBrIsxhQWSD8rq0NaXvE/edit?gid=78774952#gid=78774952"
+  
   read -k 1 "choice?Open in (p) Premiere, (c) CapCut, or any other key to skip: "
   echo
   case "${choice:l}" in
