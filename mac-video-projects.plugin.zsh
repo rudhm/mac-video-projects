@@ -43,7 +43,7 @@ newproject() {
     target="$base/$(date "+%B %-d")"
   fi
 
-  mkdir -p "$target"/{footage,audio,graphics,exports,assets,captions}
+  mkdir -p "$target"/{01_footage,02_audio,03_graphics,04_captions,05_exports}
 
   echo "✅ Created/Updated project structure:"
   find "$target" -type d | sed "s|^$projects_dir/||" | sort | head -20
@@ -94,24 +94,21 @@ sortproject() {
     local dest=""
 
     case "$ext" in
-      # Video → footage
+      # Video → 01_footage
       mp4|avi|mkv|wmv|flv|webm|m4v|mov)
-        dest="footage" ;;
-      # Audio → audio
+        dest="01_footage" ;;
+      # Audio → 02_audio
       mp3|wav|flac|aac|ogg|m4a|wma)
-        dest="audio" ;;
-      # Images → graphics
-      png|jpg|jpeg|gif|bmp|svg|webp|avif|tiff|heic|psd|ai)
-        dest="graphics" ;;
-      # Subtitles → captions
+        dest="02_audio" ;;
+      # Images, Documents & Archives → 03_graphics
+      png|jpg|jpeg|gif|bmp|svg|webp|avif|tiff|heic|psd|ai|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|rtf|zip|rar|7z|tar|gz)
+        dest="03_graphics" ;;
+      # Subtitles → 04_captions
       srt|vtt|ass|sub|sbv|lrc)
-        dest="captions" ;;
-      # Documents & Archives → assets
-      pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|rtf|zip|rar|7z|tar|gz)
-        dest="assets" ;;
-      # Project Files → project-files
+        dest="04_captions" ;;
+      # Project Files → 00_project-files
       prproj|aep|drp|fcpx|cpr|veg)
-        dest="project-files" ;;
+        dest="00_project-files" ;;
       *)
         # unknown extension — skip
         ;;
