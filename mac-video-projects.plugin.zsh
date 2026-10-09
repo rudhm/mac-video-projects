@@ -67,6 +67,24 @@ on error
   -- Silently fail if accessibility permissions are denied or other errors occur
 end try
 EOF
+
+  # Ask which editor to open
+  local choice
+  read -k 1 "choice?Open in (p) Premiere, (c) CapCut, or any other key to skip: "
+  echo
+  case "${choice:l}" in
+    p)
+      local premiere=(/Applications/Adobe\ Premiere\ Pro*/Adobe\ Premiere\ Pro*.app(N))
+      if (( ${#premiere[@]} > 0 )); then
+        echo -n "$target" | pbcopy
+        open -a "${premiere[-1]}"
+        echo "📋 Folder path copied. Paste it in the save dialog with Cmd+Shift+G"
+      else
+        echo "⚠️  Premiere Pro not found in /Applications"
+      fi ;;
+    c)
+      open -a "CapCut" || echo "⚠️  CapCut not found" ;;
+  esac
 }
 
 # Shorter alias for newproject
