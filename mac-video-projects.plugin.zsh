@@ -120,9 +120,38 @@ EOF
     p)
       local premiere=(/Applications/Adobe\ Premiere\ Pro*/Adobe\ Premiere\ Pro*.app(N))
       if (( ${#premiere[@]} > 0 )); then
-        echo -n "$target" | pbcopy
-        open -a "${premiere[-1]}"
-        echo "📋 Folder path copied. In the save dialog, press Cmd+Shift+G, then Cmd+V to paste."
+        local plugin_dir="${${(%):-%x}:A:h}"
+        [[ -z "$plugin_dir" || "$plugin_dir" == "." ]] && plugin_dir="$HOME/Code/mac-video-projects"
+        local template="$plugin_dir/template.prproj"
+        
+        # Determine project file name from target folder name
+        local project_name="$(basename "$target")"
+        local project_file="$target/$project_name.prproj"
+
+        # Check for existing project file or initialize from clean template
+        local existing_projects=("$target"/*.prproj(N))
+        if (( ${#existing_projects[@]} > 0 )); then
+          project_file="${existing_projects[1]}"
+        elif [[ -f "$template" ]]; then
+          cp "$template" "$project_file"
+        elif [[ -f "/Applications/Adobe Premiere Pro 2026/Adobe Premiere Pro 2026.app/Contents/Resources/TemplateProjects/en_US/Standard Template Project.prproj" ]]; then
+          cp "/Applications/Adobe Premiere Pro 2026/Adobe Premiere Pro 2026.app/Contents/Resources/TemplateProjects/en_US/Standard Template Project.prproj" "$project_file"
+        fi
+
+        # Write out the ExtendScript snippet for reference/scripting environment
+        cat << JSX > "$target/create_project.jsx"
+// Adobe Premiere Pro ExtendScript
+var path = "$project_file";
+app.newProject(path);
+JSX
+
+        if [[ -f "$project_file" ]]; then
+          open -a "${premiere[-1]}" "$project_file"
+          echo "🎬 Premiere Pro opened project at exact path: $(basename "$project_file")"
+        else
+          open -a "${premiere[-1]}"
+          echo "🎬 Premiere Pro opening."
+        fi
       else
         echo "⚠️  Premiere Pro not found in /Applications"
       fi ;;
