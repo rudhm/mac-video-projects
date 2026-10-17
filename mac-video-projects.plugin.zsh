@@ -122,7 +122,7 @@ EOF
       if (( ${#premiere[@]} > 0 )); then
         echo -n "$target" | pbcopy
         open -a "${premiere[-1]}"
-        echo "📋 Folder path copied. Paste it in the save dialog with Cmd+Shift+G"
+        echo "📋 Folder path copied. In the save dialog, press Cmd+Shift+G, then Cmd+V to paste."
       else
         echo "⚠️  Premiere Pro not found in /Applications"
       fi ;;
