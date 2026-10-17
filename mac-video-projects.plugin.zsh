@@ -14,18 +14,21 @@ newproject() {
         editor_choice="p" ;;
       -c|--capcut)
         editor_choice="c" ;;
+      -f|--finder)
+        editor_choice="f" ;;
       -s|--skip|-n|--no-editor)
         editor_choice="none" ;;
       --no-pin)
         no_pin=true ;;
       -h|--help)
-        echo "Usage: newproject [-u] [-p|-c|-s] [--no-pin] <project-name> [sub-project]"
+        echo "Usage: newproject [-u] [-p|-c|-f|-s] [--no-pin] <project-name> [sub-project]"
         echo "Aliases: np"
         echo ""
         echo "Options:"
         echo "  -u, --url       Open tracking spreadsheet in default browser"
         echo "  -p, --premiere  Directly open project path in Premiere Pro"
         echo "  -c, --capcut    Directly open CapCut"
+        echo "  -f, --finder    Directly reveal project folder in Finder"
         echo "  -s, --skip      Skip opening an editor (no prompt)"
         echo "  --no-pin        Skip pinning project to Finder sidebar"
         return 0 ;;
@@ -36,7 +39,7 @@ newproject() {
   done
 
   if (( ${#args[@]} == 0 )); then
-    echo "Usage: newproject [-u] [-p|-c|-s] [--no-pin] <project-name> [sub-project]"
+    echo "Usage: newproject [-u] [-p|-c|-f|-s] [--no-pin] <project-name> [sub-project]"
     echo "Example: newproject -u Carvaidya Lot-69"
     return 1
   fi
@@ -86,6 +89,10 @@ newproject() {
     echo "$rel_target/$sub"
   done
 
+  # Always copy the target directory path to macOS clipboard
+  print -n -r -- "$target" | pbcopy
+  echo "📋 Path copied to clipboard (Cmd+V to paste)"
+
   # Pin folder to Finder sidebar in background without stealing screen focus or delaying terminal
   if [[ "${MAC_VIDEO_PROJECTS_PIN_SIDEBAR:-true}" != "false" ]] && ! $no_pin; then
     (
@@ -111,7 +118,7 @@ EOF
   local choice="$editor_choice"
   if [[ -z "$choice" ]]; then
     if [[ -t 0 ]]; then
-      read -k 1 "choice?Open in (p) Premiere, (c) CapCut, or any other key to skip: "
+      read -k 1 "choice?Open in (p) Premiere, (c) CapCut, (f) Finder, or any other key to skip: "
       echo
     fi
   fi
@@ -120,14 +127,15 @@ EOF
     p)
       local premiere=(/Applications/Adobe\ Premiere\ Pro*/Adobe\ Premiere\ Pro*.app(N))
       if (( ${#premiere[@]} > 0 )); then
-        echo -n "$target" | pbcopy
         open -a "${premiere[-1]}"
-        echo "📋 Folder path copied. Paste it in the save dialog with Cmd+Shift+G"
+        echo "🎬 Premiere Pro opening. In save dialog, press Cmd+Shift+G then Cmd+V to paste path."
       else
         echo "⚠️  Premiere Pro not found in /Applications"
       fi ;;
     c)
       open -a "CapCut" || echo "⚠️  CapCut not found" ;;
+    f)
+      open "$target" ;;
   esac
 }
 

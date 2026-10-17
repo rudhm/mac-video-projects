@@ -45,8 +45,9 @@ It creates the following folders:
 
 #### Options:
 - `-u, --url`: Open the video tracking spreadsheet in your browser.
-- `-p, --premiere`: Directly open in Adobe Premiere Pro and copy project path to clipboard.
+- `-p, --premiere`: Directly open in Adobe Premiere Pro.
 - `-c, --capcut`: Directly open in CapCut.
+- `-f, --finder`: Directly open the project folder in Finder.
 - `-s, --skip`: Skip opening an editor (bypass prompt).
 - `--no-pin`: Skip pinning folder to Finder sidebar.
 
