@@ -86,6 +86,9 @@ newproject() {
     echo "$rel_target/$sub"
   done
 
+  # Always copy target directory path to macOS clipboard as a convenience
+  print -n -r -- "$target" | pbcopy
+
   # Pin folder to Finder sidebar in background without stealing screen focus or delaying terminal
   if [[ "${MAC_VIDEO_PROJECTS_PIN_SIDEBAR:-true}" != "false" ]] && ! $no_pin; then
     (
