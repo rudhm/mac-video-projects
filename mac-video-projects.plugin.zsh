@@ -89,20 +89,21 @@ newproject() {
   # Always copy target directory path to macOS clipboard as a convenience
   print -n -r -- "$target" | pbcopy
 
-  # Pin folder to Finder sidebar in background without stealing screen focus or delaying terminal
+  # Pin folder to Finder sidebar reliably
   if [[ "${MAC_VIDEO_PROJECTS_PIN_SIDEBAR:-true}" != "false" ]] && ! $no_pin; then
-    (
-      osascript 2>/dev/null <<EOF
+    osascript 2>/dev/null <<EOF
 try
+  tell application "System Events" to set activeApp to name of first application process whose frontmost is true
+  tell application "Finder" to activate
   tell application "Finder" to reveal (POSIX file "$target" as alias)
   tell application "System Events" to tell process "Finder"
     click menu item "Add to Sidebar" of menu "File" of menu bar 1
   end tell
   tell application "Finder" to close front window
+  tell application activeApp to activate
 on error
 end try
 EOF
-    ) &!
   fi
 
   # Open tracking spreadsheet if -u was provided
