@@ -2,17 +2,41 @@
 #        newproject ClientName Phase2  → creates $MAC_VIDEO_PROJECTS_DIR/ClientName/Phase2/...
 newproject() {
   local open_url=false
+  local no_pin=false
+  local editor_choice="${MAC_VIDEO_PROJECTS_EDITOR:-}"
   local args=()
-  for arg in "$@"; do
-    if [[ "$arg" == "-u" ]]; then
-      open_url=true
-    else
-      args+=("$arg")
-    fi
+
+  while (( $# > 0 )); do
+    case "$1" in
+      -u|--url)
+        open_url=true ;;
+      -p|--premiere)
+        editor_choice="p" ;;
+      -c|--capcut)
+        editor_choice="c" ;;
+      -s|--skip|-n|--no-editor)
+        editor_choice="none" ;;
+      --no-pin)
+        no_pin=true ;;
+      -h|--help)
+        echo "Usage: newproject [-u] [-p|-c|-s] [--no-pin] <project-name> [sub-project]"
+        echo "Aliases: np"
+        echo ""
+        echo "Options:"
+        echo "  -u, --url       Open tracking spreadsheet in default browser"
+        echo "  -p, --premiere  Directly open project path in Premiere Pro"
+        echo "  -c, --capcut    Directly open CapCut"
+        echo "  -s, --skip      Skip opening an editor (no prompt)"
+        echo "  --no-pin        Skip pinning project to Finder sidebar"
+        return 0 ;;
+      *)
+        args+=("$1") ;;
+    esac
+    shift
   done
 
   if (( ${#args[@]} == 0 )); then
-    echo "Usage: newproject [-u] <project-name> [sub-project]"
+    echo "Usage: newproject [-u] [-p|-c|-s] [--no-pin] <project-name> [sub-project]"
     echo "Example: newproject -u Carvaidya Lot-69"
     return 1
   fi
@@ -55,39 +79,43 @@ newproject() {
 
   mkdir -p "$target"/{01_footage,02_audio,03_graphics,04_captions,05_drafts,06_final}
 
+  local rel_target="${target#$projects_dir/}"
   echo "✅ Created/Updated project structure:"
-  find "$target" -type d | sed "s|^$projects_dir/||" | sort | head -20
+  echo "$rel_target"
+  for sub in 01_footage 02_audio 03_graphics 04_captions 05_drafts 06_final; do
+    echo "$rel_target/$sub"
+  done
 
-  # Seamlessly pin the folder to the sidebar, handling permission errors gracefully
-  osascript <<EOF &>/dev/null
+  # Pin folder to Finder sidebar in background without stealing screen focus or delaying terminal
+  if [[ "${MAC_VIDEO_PROJECTS_PIN_SIDEBAR:-true}" != "false" ]] && ! $no_pin; then
+    (
+      osascript 2>/dev/null <<EOF
 try
-  tell application "System Events"
-    if not UI elements enabled then return
+  tell application "Finder" to reveal (POSIX file "$target" as alias)
+  tell application "System Events" to tell process "Finder"
+    click menu item "Add to Sidebar" of menu "File" of menu bar 1
   end tell
-  
-  tell application "System Events" to set activeApp to name of first application process whose frontmost is true
-  tell application "Finder" to activate
-  tell application "Finder" to open (POSIX file "$target" as alias)
-  delay 0.5
-  tell application "System Events" to keystroke "t" using {command down, control down}
-  delay 0.3
   tell application "Finder" to close front window
-  tell application activeApp to activate
 on error
-  -- Silently fail if accessibility permissions are denied or other errors occur
 end try
 EOF
+    ) &!
+  fi
 
-  # Ask which editor to open
-  local choice
-  
   # Open tracking spreadsheet if -u was provided
   if $open_url; then
     open "https://docs.google.com/spreadsheets/d/1laNvw3iefHJpQiySSKjZFQ1QBrIsxhQWSD8rq0NaXvE/edit?gid=78774952#gid=78774952"
   fi
-  
-  read -k 1 "choice?Open in (p) Premiere, (c) CapCut, or any other key to skip: "
-  echo
+
+  # Ask which editor to open (or use flag / environment setting)
+  local choice="$editor_choice"
+  if [[ -z "$choice" ]]; then
+    if [[ -t 0 ]]; then
+      read -k 1 "choice?Open in (p) Premiere, (c) CapCut, or any other key to skip: "
+      echo
+    fi
+  fi
+
   case "${choice:l}" in
     p)
       local premiere=(/Applications/Adobe\ Premiere\ Pro*/Adobe\ Premiere\ Pro*.app(N))
@@ -103,7 +131,11 @@ EOF
   esac
 }
 
-# Shorter alias for newproject
+# Shorter function and alias for newproject
+unalias np 2>/dev/null
+np() {
+  newproject "$@"
+}
 alias np="newproject"
 
 # Sort files in current folder into project subfolders by extension
@@ -118,7 +150,7 @@ sortproject() {
 
   local moved=0
 
-  for file in *; do
+  for file in *(N); do
     # skip directories and dotfiles
     [ -d "$file" ] && continue
     [[ "$file" == .* ]] && continue
@@ -207,4 +239,8 @@ versionfile() {
   echo "✅ Renamed to: $new_name"
 }
 
+unalias vf 2>/dev/null
+vf() {
+  versionfile "$@"
+}
 alias vf="versionfile"

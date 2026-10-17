@@ -36,15 +36,26 @@ Providing a second argument continues to use that value as the subfolder
 name.
 
 It creates the following folders:
-- `footage`
-- `audio`
-- `graphics`
-- `exports`
-- `assets` (now includes archives like .zip, .rar)
-- `captions`
-- `project-files` (created by sortproject for .prproj, .aep, .drp, etc.)
+- `01_footage`
+- `02_audio`
+- `03_graphics`
+- `04_captions`
+- `05_drafts`
+- `06_final`
 
-*Bonus:* It automatically handles casing if the folder already exists, and instantly pins the newly created folder to your macOS Finder sidebar! (Requires Terminal Accessibility permissions).
+#### Options:
+- `-u, --url`: Open the video tracking spreadsheet in your browser.
+- `-p, --premiere`: Directly open in Adobe Premiere Pro and copy project path to clipboard.
+- `-c, --capcut`: Directly open in CapCut.
+- `-s, --skip`: Skip opening an editor (bypass prompt).
+- `--no-pin`: Skip pinning folder to Finder sidebar.
+
+#### Environment Variables:
+- `MAC_VIDEO_PROJECTS_DIR`: Base projects directory (defaults to `~/Projects`).
+- `MAC_VIDEO_PROJECTS_EDITOR`: Default editor action (`p`, `c`, or `none`).
+- `MAC_VIDEO_PROJECTS_PIN_SIDEBAR`: Set to `false` to disable sidebar pinning.
+
+*Bonus:* Automatically handles casing if the folder already exists, and asynchronously pins the folder to your macOS Finder sidebar without stealing focus or slowing down the terminal.
 
 ### `sortproject`
 Sorts loose files in your current directory into the standard subfolders based on their file extensions. Folders are only created if files match their category.
