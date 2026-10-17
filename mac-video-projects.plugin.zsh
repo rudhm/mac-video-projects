@@ -141,12 +141,6 @@ EOF
           cp "/Applications/Adobe Premiere Pro 2026/Adobe Premiere Pro 2026.app/Contents/Resources/TemplateProjects/en_US/Standard Template Project.prproj" "$project_file"
         fi
 
-        # Write out the ExtendScript snippet for reference/scripting environment
-        cat << JSX > "$target/create_project.jsx"
-// Adobe Premiere Pro ExtendScript
-var path = "$project_file";
-app.newProject(path);
-JSX
 
         if [[ -f "$project_file" ]]; then
           open -a "${premiere[-1]}" "$project_file"
